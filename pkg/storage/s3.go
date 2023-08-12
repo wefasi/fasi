@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"log"
-	"path"
 	"strings"
 
 	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
@@ -15,11 +14,10 @@ import (
 
 type S3Storage struct {
 	bucket string
-	folder string
 	client *s3.Client
 }
 
-func NewS3Storage(folder string) S3Storage {
+func NewS3Storage() S3Storage {
 	profile := "fasi"
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(profile))
 	if err != nil {
@@ -30,17 +28,8 @@ func NewS3Storage(folder string) S3Storage {
 
 	return S3Storage{
 		bucket: "fasi-sites",
-		folder: folder,
 		client: client,
 	}
-}
-
-func (s *S3Storage) Folder() string {
-	return path.Join(s.bucket, s.folder)
-}
-
-func (s *S3Storage) SetFolder(folder string) {
-	s.folder = folder
 }
 
 func (s *S3Storage) Get(file string) (string, error) {
@@ -54,7 +43,6 @@ func (s *S3Storage) Get(file string) (string, error) {
 		var he *awshttp.ResponseError
 		if errors.As(err, &he) {
 			if he.HTTPStatusCode() == 404 {
-				// TODO custom errors
 				return "", errors.New("not found")
 			}
 		}
@@ -72,11 +60,10 @@ func (s *S3Storage) Get(file string) (string, error) {
 
 func (s *S3Storage) Put(file string, content string) error {
 	buff := strings.NewReader(content)
-	key := path.Join(s.folder, file)
 	_, err := s.client.PutObject(context.TODO(),
 		&s3.PutObjectInput{
 			Bucket: &s.bucket,
-			Key:    &key,
+			Key:    &file,
 			Body:   buff,
 		},
 	)

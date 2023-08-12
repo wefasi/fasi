@@ -38,25 +38,35 @@ func Proxy(c *fiber.Ctx) error {
 	status := 200
 	resource := filepath.Join(site, release, request_path)
 	storage := infraestructure.GetS3()
-	content, err := storage.Get(resource)
-	if err != nil {
-		if err.Error() == "not found" {
-			status = 404
-			content, err = storage.Get(path.Join(site, release, "404.html"))
-		}
+	cache := infraestructure.GetCache()
 
+	content, err := cache.Get(resource)
+	cacheHit := "HIT"
+
+	if err != nil {
+		content, err = storage.Get(resource)
+		cacheHit = "MISS"
 		if err != nil {
-			log.Println("[ERROR] " + err.Error())
-			status = 500
-			content = "oops, something went wrong :("
+			if err.Error() == "not found" {
+				status = 404
+				content, err = storage.Get(path.Join(site, release, "404.html"))
+			}
+
+			if err != nil {
+				log.Println("[ERROR] " + err.Error())
+				status = 500
+				content = "oops, something went wrong :("
+			}
+		} else {
+			cache.Put(resource, content)
 		}
 	}
 
 	contentType := mime.TypeByExtension(ext)
 	c.Set(fiber.HeaderContentType, contentType)
-
-	// TODO improve checking extension
 	c.Set(fiber.HeaderCacheControl, "public, max-age=60")
+
+	log.Println("[DEBUG]", cacheHit, "-", resource)
 
 	return c.Status(status).SendString(content)
 }

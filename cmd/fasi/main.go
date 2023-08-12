@@ -32,6 +32,7 @@ func newApp() *fiber.App {
 }
 
 func main() {
+	infraestructure.InitCache()
 	infraestructure.InitS3()
 	app := newApp()
 
