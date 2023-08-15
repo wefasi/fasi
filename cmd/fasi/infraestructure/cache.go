@@ -9,7 +9,7 @@ import (
 var cache pkg.Storage
 
 func InitCache() {
-	c := pkg.NewLocalDB(time.Minute)
+	c := pkg.NewLocalDB(time.Hour)
 	cache = &c
 }
 

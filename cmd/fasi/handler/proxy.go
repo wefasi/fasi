@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"log"
 	"mime"
 	"path"
@@ -11,14 +12,37 @@ import (
 	"github.com/wefasi/fasi/cmd/fasi/infraestructure"
 )
 
+func getSiteRelease(site string) (string, error) {
+	storage := infraestructure.GetS3()
+	cache := infraestructure.GetCache()
+	releaseKey := filepath.Join(site, "release")
+	release, err := cache.Get(releaseKey)
+
+	log.Println("release: ", release)
+	if err != nil {
+		log.Println("[DEBUG] release miss ", err)
+		release, err = storage.Get(releaseKey)
+
+		if err != nil {
+			log.Println("relase file err: ", err)
+			return "", errors.New("not found")
+		}
+
+		cache.Put(releaseKey, release)
+	}
+
+	return release, nil
+}
+
 func Proxy(c *fiber.Ctx) error {
 	site := c.Hostname()
-	release := ""
+
 	customHost := c.Locals("host")
 	if customHost != nil {
 		site = customHost.(string)
 	}
 
+	release, _ := getSiteRelease(site)
 	customRelease := c.Locals("release")
 	if customRelease != nil {
 		release = customRelease.(string)

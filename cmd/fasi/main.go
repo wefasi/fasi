@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	fiber "github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 	"github.com/wefasi/fasi/cmd/fasi/handler"
 	"github.com/wefasi/fasi/cmd/fasi/infraestructure"
 )
@@ -26,12 +28,17 @@ func newApp() *fiber.App {
 		return c.Next()
 	})
 
+	app.Put("/api/i/site/:site/release/:release", handler.SetSiteRelease)
 	app.Get("*", handler.Proxy)
 
 	return app
 }
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	infraestructure.InitCache()
 	infraestructure.InitS3()
 	app := newApp()
