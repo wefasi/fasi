@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/wefasi/fasi/cmd/fasi/infraestructure"
+	"github.com/wefasi/fasi/server/infraestructure"
 
 	"github.com/gofiber/fiber/v2"
 )

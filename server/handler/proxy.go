@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/wefasi/fasi/cmd/fasi/infraestructure"
+	"github.com/wefasi/fasi/server/infraestructure"
 )
 
 func getSiteRelease(site string) (string, error) {
