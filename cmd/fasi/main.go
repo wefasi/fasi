@@ -12,6 +12,7 @@ func main() {
 	infraestructure.InitCache()
 	infraestructure.InitS3()
 	app := server.NewApp()
+	server.AddRoutes(app)
 
 	fmt.Println("🚀 Listening http://localhost:3210")
 	err := app.Listen("localhost:3210")

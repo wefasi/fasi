@@ -24,8 +24,10 @@ func NewApp() *fiber.App {
 		return c.Next()
 	})
 
+	return app
+}
+
+func AddRoutes(app *fiber.App) {
 	app.Put("/api/i/site/:site/release/:release", handler.SetSiteRelease)
 	app.Get("*", handler.Proxy)
-
-	return app
 }
